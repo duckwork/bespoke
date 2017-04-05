@@ -1,0 +1,26 @@
+#! /usr/bin/env dash
+
+# adapted from FYRE
+
+. $UTIL
+
+log $#
+if [ $# -eq 0 ]; then
+  log reads x y -- wmp
+else
+  [ $# -eq 2 ] || die $E_ARG "$0 [<x> <y>]";
+  x=$1; y=$2;
+fi
+
+for wid in $(lsw | tac); do
+  reads wx wy ww wh -- wattr xywh $wid;
+  [ $wx -gt $x ] && continue;
+  [ $wy -gt $y ] && continue;
+  [ $(( wx + ww )) -lt $x ] && continue;
+  [ $(( wy + wh )) -lt $y ] && continue;
+  echo "$wid";
+  exit $SUCCESS;
+  unset -v wid;
+done
+
+exit $E_WIN;

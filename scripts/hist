@@ -1,0 +1,55 @@
+#! /usr/bin/env dash
+
+# focus history
+
+dir="$WMtmp/focushistory"
+mkdir -p $dir;
+hist="$dir/history";
+pfile="$dir/pointer";
+touch $hist $pfile;
+tmp="$(mktemp $hist.XXXXXX)";
+
+MAX_HIST_LENGTH=100; # TODO set in config
+pointer="$(head -n1 $pfile)"
+hist_length=$(wc -l $hist | cut -d' ' -f1)
+[ $hist_length -eq 0 ] && echo $(pfw) >>$hist;
+[ -z $pointer ] && pointer=$hist_length;
+
+bye() {
+  sed '/^$/d' $hist >$tmp;
+  mv $tmp $hist;
+  # [ $pointer -ge $hist_length ] && pointer=$hist_length;
+  # [ $pointer -le 1 ] && pointer=1;
+  echo $pointer >$pfile;
+  test $# -gt 0 && exit $1;
+  rm $tmp 2>/dev/null;
+}
+
+arg=$1; shift;
+case $arg in
+  cat) cat $hist ;;
+  get)
+    sed -e "$pointer s/^/> &/" -e "$pointer !s/^/  &/" $hist;
+    ;;
+  clean) rm -f $hist $pfile; exit 0 ;;
+  push)
+    [ "$(tail -n1 $hist)" != "$1" ] && printf '%s\n' $@ >> $hist;
+    ;;
+  newer)
+    pointer=$((pointer + 1));
+    # if pointer is on last line, it's the newest window. return failure
+    # [ "$pointer" -ge $hist_length ] && bye 1
+    # otherwise, return line one down from $pointer
+    sed -n "$pointer p" $hist;
+    ;;
+  older)
+    pointer=$((pointer - 1))
+    # if pointer is on first line, it's the oldest window. return failure
+    # [ $pointer -le 1 ] && bye 1
+    sed -n "$pointer p" $hist;
+    ;;
+  *)
+    die $E_ARG "unknown option: $1"
+esac
+
+bye;

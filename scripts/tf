@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+# Toggle Focus
+
+wm focus $(lsw | grep -v $(pfw))

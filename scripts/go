@@ -1,0 +1,12 @@
+#! /usr/bin/env dash
+
+# WM GO
+# let's go!
+
+wew -s | while IFS=: read ev wid; do
+  case "$ev" in
+    7) # mouse enter event
+      wm focus "$wid"
+      ;;
+  esac
+done &
