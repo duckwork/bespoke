@@ -1,0 +1,64 @@
+#! /usr/bin/env dash
+
+# `client` works with clients in a persistent stack (read:
+# that is independent of stacking order).
+
+. $LIB/util.sh
+. $LIB/file.sh
+
+hi() 
+{ # Setup environment
+  dir="$TMP/clients";
+  mkdir -p $dir;
+
+  focus="$dir/focus";
+  [ ! -f $focus ] && pfw > $focus;
+  mapped="$dir/mapped";
+  [ ! -f $mapped ] && lsw > $mapped;
+  hidden="$dir/hidden";
+  [ ! -f $hidden ] && lsw -u > $hidden;
+  ignored="$dir/ignored";
+  [ ! -f $ignored ] && lsw -o > $ignored;
+
+  read fw <$focus
+  pointer=$(sed "/$fw/=;d" $mapped);
+  [ -z $pointer ] && pointer=$(length $mapped);
+}
+
+bye()
+{ # Clean up
+  sed "$pointer p;d" $mapped;
+  pfw > $focus;
+  [ $# -gt 0 ] && exit $1;
+}
+
+client_next() 
+{ # Focus the next client in the stack, wrapping around
+  amt=${1:-1};
+  pointer=$(( pointer + $amt ));
+  if [ $pointer -gt $(length $mapped) ]; then
+    pointer=$(( pointer - $(length $mapped) ));
+  fi
+}
+client_prev() 
+{ # Focus the previous client in the stack, wrapping around
+  amt=${1:-1};
+  pointer=$(( pointer - $amt ));
+  if [ $pointer -lt 1 ]; then
+    pointer=$(( pointer + $(length $mapped) ));
+  fi
+}
+
+main()
+{
+  cmd="$1"; shift;
+  case "$cmd" in
+    next) client_next $@ ;;
+    prev) client_prev $@ ;;
+    *) die $E_ARG "Unknown argument: $@" ;;
+  esac
+}
+
+hi;
+main $@;
+bye;

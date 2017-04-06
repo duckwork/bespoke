@@ -2,11 +2,10 @@
 
 # adapted from FYRE
 
-. $UTIL
+equip ;
 
-log $#
 if [ $# -eq 0 ]; then
-  log reads x y -- wmp
+  reads x y -- wmp
 else
   [ $# -eq 2 ] || die $E_ARG "$0 [<x> <y>]";
   x=$1; y=$2;

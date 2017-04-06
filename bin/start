@@ -5,3 +5,7 @@ wtf $(lsw)
 pkill compton
 
 wtp 10 10 $((1366/2)) $((768/2)) $(pfw)
+
+wm grabkeys
+
+wm go

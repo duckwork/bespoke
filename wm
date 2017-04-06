@@ -2,17 +2,26 @@
 # WM 0.1
 # by Case Duckworth
 
-setup() { # setup variables, files, and directories
+hi() 
+{ # setup variables, files, and directories
   # export WMD="${XDG_CONFIG_HOME:-$HOME/.config}/wm"
   export WMD="$HOME/projects/wm";
-  export UTIL="$WMD/util.sh";
-  export WMbin="$WMD/scripts";
-  mkdir -p $WMD $WMscripts;
+  export LIB="$WMD/lib";
+  export BIN="$WMD/bin";
+  mkdir -p $WMD $BIN $LIB ;
 
-  export WMtmp="/tmp/wm";
-  mkdir -p $WMtmp;
+  export TMP="/tmp/wm";
+  mkdir -p $TMP;
+}
 
-  . $UTIL;
+edit()
+{
+  file="$1";
+  if [ -w "$file" ] || [ ! -f "$file" ]; then
+    $EDITOR $file;
+  else
+    die $E_FNF "\"$file\" is not writable"
+  fi
 }
 
 # Local utilities
@@ -22,15 +31,15 @@ runf()
   case "$1" in
     0x*) wid="$1" ;;
     *)
-      cmd="$1"; shift;
-      if [ -x "$WMbin/$cmd" ]; then
-        wid="$($WMbin/$cmd $@)";
+      cmd="$BIN/$1"; shift;
+      if [ -x "$cmd" ]; then
+        wid="$($cmd $@)";
       else
         die $E_EXE "Unknown command: \"$cmd\"";
       fi
       ;;
   esac
-  log $f $wid;
+  $f $wid;
 }
 
 # Atomic actions
@@ -119,16 +128,16 @@ main()
   case "$cmd" in
     focus|map|hide|ignore|notice|raise|lower) # built-in commands
       for w ; do
-        log $cmd $@;
+        $cmd $@;
       done
       ;;
     *) # other scripts
-      cmd="$WMbin/$cmd";
+      cmd="$BIN/$cmd";
       if [ -x "$cmd" ]; then
-        log $cmd $@;
+        $cmd $@;
       elif [ -f "$cmd" ]; then # TODO take this out when finished
         chmod +x "$cmd"
-        log $cmd $@;
+        $cmd $@;
       else
         die $E_EXE "\"$cmd\" is unavailable";
       fi
@@ -136,9 +145,10 @@ main()
   esac
 }
 
-setup;
+hi;
+. $LIB/util.sh
 export WMVERBOSE=false; WMQUIET='';
-while getopts vqle: opt; do
+while getopts vqle:i: opt; do
   case $opt in
     v) # verbose
       export WMVERBOSE=true;
@@ -147,19 +157,14 @@ while getopts vqle: opt; do
       WMQUIET=silent;
       ;;
     l) # list commands
-      log ls $WMbin;
+      ls $BIN;
       exit $SUCCESS;
       ;;
     e) # edit command
-      file="$WMbin/$OPTARG";
-      if [ -w "$file" ] || [ ! -f "$file" ]; then
-        log $EDITOR $file;
-      else
-        die $E_FNF "\"$file\" is not writable"
-      fi
+      edit "$BIN/$OPTARG";
       ;;
     \?) die $E_ARG "Unknown option \"$opt\"" ;;
   esac
-done
+done; shift $((OPTIND - 1));
 
 $WMQUIET main $@
