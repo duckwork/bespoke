@@ -2,7 +2,7 @@
 
 # adapted from FYRE
 
-equip ;
+. $LIB/util.sh;
 
 if [ $# -eq 0 ]; then
   reads x y -- wmp
