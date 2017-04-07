@@ -1,7 +1,10 @@
 #! /usr/bin/env dash
 
-# end things gracefully
-read K < $TMP/keyd.pid;
-kill $K $B ;
+# Delete stack
+wm stack nuke;
 
-pkill -x wew
+# End processes
+# PUT THIS LAST
+read K < $TMP/keyd.pid;
+kill $K $B;
+pkill -x wew;
