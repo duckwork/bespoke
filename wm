@@ -8,6 +8,7 @@ hi()
   export WMD="$HOME/projects/wm";
   export LIB="$WMD/lib";
   export BIN="$WMD/bin";
+  export HOOKS="$WMD/hooks";
   mkdir -p $WMD $BIN $LIB ;
 
   export TMP="/tmp/wm";
@@ -31,6 +32,7 @@ runf()
   case "$1" in
     0x*) wid="$1" ;;
     *)
+      [ $# -ge 2 ] || die $E_ARG "Not enough arguments"
       cmd="$BIN/$1"; shift;
       if [ -x "$cmd" ]; then
         wid="$($cmd $@)";
@@ -39,16 +41,19 @@ runf()
       fi
       ;;
   esac
-  $f $wid;
+  logx $f $wid;
 }
 
 # Atomic actions
 focus() 
 { # focus a window
+  # . $LIB/config.sh
   focus_wid() {
+    # oldw=$(pfw);
     if wattr "$1"; then
       wtf "$1";
       chwso -r "$1";
+      # set_borders "$w" "$1";
     fi
   }
   runf focus_wid "$@";
@@ -126,10 +131,9 @@ main()
   [ $# -ge 1 ] || die $E_ARG "Not enough arguments";
   cmd="$1"; shift;
   case "$cmd" in
-    focus|map|hide|ignore|notice|raise|lower) # built-in commands
-      for w ; do
-        $cmd $@;
-      done
+    focus|raise|lower|map|hide|ignore|notice|raise|lower) 
+      # built-in commands
+      $cmd $@;
       ;;
     *) # other scripts
       cmd="$BIN/$cmd";
@@ -145,6 +149,18 @@ main()
   esac
 }
 
+bespoke()
+{ # ln -s ./wm $PATH/bespoke ; startx bespoke
+  wm stack nuke;
+  sxhkd -c $WMD/keys || {
+    read pid <$TMP/keyd.pid;
+    kill -SIGUSR1 $pid;
+  } &
+  echo $! > $TMP/keyd.pid
+  wm bait &
+  wait;
+}
+
 hi;
 . $LIB/util.sh
 export WMVERBOSE=false; WMQUIET='';
@@ -158,13 +174,17 @@ while getopts vqle:i: opt; do
       ;;
     l) # list commands
       ls $BIN;
-      exit $SUCCESS;
+      exit $?;
       ;;
     e) # edit command
       edit "$BIN/$OPTARG";
+      exit $?;
       ;;
     \?) die $E_ARG "Unknown option \"$opt\"" ;;
   esac
 done; shift $((OPTIND - 1));
 
-$WMQUIET main $@
+case $0 in
+  *bespoke) $WMQUIET bespoke ;;
+  *) $WMQUIET main $@        ;;
+esac

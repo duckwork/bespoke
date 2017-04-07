@@ -1,7 +1,7 @@
 # vim:ft=sxhkd
 
 super + r
-	pkill -SIGUSR1 sxhkd
+	read p </tmp/wm/keyd.pid && kill -SIGUSR1 $p
 
 super + Return
 	terminal
@@ -10,10 +10,10 @@ super + semicolon
 	dmenu_run
 
 super + j
-	wm focus client next
+	wm focus stack next
 
 super + k
-	wm focus client prev
+	wm focus stack prev
 
 super + @button1
 	wm focus cursor; xmmv
