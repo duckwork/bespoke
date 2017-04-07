@@ -21,7 +21,7 @@ runf()
 
 edit()
 { # Edit a file in wm
-  f="$BIN/$1";
+  f="$1";
   t="$(mktemp $TMP/${f##*/}-edit.XXXXXX)";
   cp $f $t;
   ${EDITOR:-vi} $t;
