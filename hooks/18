@@ -1,2 +1,4 @@
 #! /usr/bin/env dash
 # XCB_UNMAP_NOTIFY
+
+wm focus stack prev;

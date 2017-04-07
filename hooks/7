@@ -1,4 +1,6 @@
 #!/usr/bin/env dash
 # XCB_ENTER_NOTIFY
 
-wm focus $1;
+if ! wattr o $1; then
+  wm focus $1;
+fi

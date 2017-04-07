@@ -2,3 +2,4 @@
 # XCB_DESTROY_NOTIFY
 
 wm stack rm $1;
+wm focus stack prev;

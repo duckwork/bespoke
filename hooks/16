@@ -1,5 +1,7 @@
 #! /usr/bin/env dash
 # XCB_CREATE_NOTIFY
 
-wm stack add $1;
-wm focus $1;
+if ! wattr o $1; then
+  wm stack add $1;
+  wm focus $1;
+fi
