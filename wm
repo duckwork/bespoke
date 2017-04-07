@@ -43,6 +43,8 @@ main()
 ############################################################
 bespoke()
 { # Start a loop and hold the session open
+  # ln -s $0 $PATH/bespoke
+  export PATH="$WMD:$PATH";
   wm stack nuke;
   sxhkd -c $WMD/keys || {
     read pid <$TMP/keyd.pid;
