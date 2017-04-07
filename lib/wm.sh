@@ -1,5 +1,4 @@
 #! /usr/bin/env dash
-# WM utility functions
 
 # Utility functions
 runf()
@@ -38,13 +37,10 @@ edit()
 # Atomic actions
 focus() 
 { # focus a window
-  # . $LIB/config.sh
   focus_wid() {
-    # oldw=$(pfw);
     if wattr "$1"; then
       wtf "$1";
       chwso -r "$1";
-      # set_borders "$w" "$1";
     fi
   }
   runf focus_wid "$@";
@@ -55,7 +51,6 @@ map()
   map_wid() {
     if wattr "$1" && ! wattr m "$1"; then
       mapw -m "$1";
-      focus "$1";
     fi
   }
   runf map_wid "$@";
@@ -66,7 +61,6 @@ hide()
   hide_wid() {
     if wattr "$1" && wattr m "$1"; then
       mapw -u "$1";
-      # TODO deal with focus
     fi
   }
   runf hide_wid "$@";
@@ -77,7 +71,6 @@ ignore()
   ignore_wid() {
     if wattr "$1" && ! wattr o "$1"; then
       ignw -s "$1";
-      # TODO deal with focus
     fi
   }
   runf ignore_wid "$@";
@@ -88,7 +81,6 @@ notice()
   notice_wid() {
     if wattr "$1" && wattr o "$1"; then
       ignw -r "$1";
-      focus "$1";
     fi
   }
   runf notice_wid "$@";
@@ -99,7 +91,6 @@ raise()
   raise_wid() {
     if wattr "$1"; then
       chwso -r "$1";
-      focus "$1";
     fi
   }
   runf raise_wid "$@";
@@ -110,7 +101,6 @@ lower()
   lower_wid() {
     if wattr "$1"; then
       chwso -l "$1";
-      # TODO deal with focus
     fi
   }
   runf lower_wid "$@";

@@ -2,10 +2,11 @@
 # WM 0.1
 # by Case Duckworth
 
-hi() 
-{ # setup variables, files, and directories
+############################################################
+hi()
+{ # Set up directories, variables
+  export WMD="$HOME/projects/wm"; # TODO on install change to
   # export WMD="${XDG_CONFIG_HOME:-$HOME/.config}/wm"
-  export WMD="$HOME/projects/wm";
   export LIB="$WMD/lib";
   export BIN="$WMD/bin";
   export HOOKS="$WMD/hooks";
@@ -15,117 +16,7 @@ hi()
   mkdir -p $TMP;
 }
 
-edit()
-{
-  file="$1";
-  if [ -w "$file" ] || [ ! -f "$file" ]; then
-    $EDITOR $file;
-  else
-    die $E_FNF "\"$file\" is not writable"
-  fi
-}
-
-# Local utilities
-runf()
-{ # runf <cmd> <args>
-  f="$1"; shift;
-  case "$1" in
-    0x*) wid="$1" ;;
-    *)
-      [ $# -ge 2 ] || die $E_ARG "Not enough arguments"
-      cmd="$BIN/$1"; shift;
-      if [ -x "$cmd" ]; then
-        wid="$($cmd $@)";
-      else
-        die $E_EXE "Unknown command: \"$cmd\"";
-      fi
-      ;;
-  esac
-  logx $f $wid;
-}
-
-# Atomic actions
-focus() 
-{ # focus a window
-  # . $LIB/config.sh
-  focus_wid() {
-    # oldw=$(pfw);
-    if wattr "$1"; then
-      wtf "$1";
-      chwso -r "$1";
-      # set_borders "$w" "$1";
-    fi
-  }
-  runf focus_wid "$@";
-}
-
-map()
-{ # map a window
-  map_wid() {
-    if wattr "$1" && ! wattr m "$1"; then
-      mapw -m "$1";
-      focus "$1";
-    fi
-  }
-  runf map_wid "$@";
-}
-
-hide()
-{ # unmap a window
-  hide_wid() {
-    if wattr "$1" && wattr m "$1"; then
-      mapw -u "$1";
-      # TODO deal with focus
-    fi
-  }
-  runf hide_wid "$@";
-}
-
-ignore()
-{ # set a window's override_redirect property
-  ignore_wid() {
-    if wattr "$1" && ! wattr o "$1"; then
-      ignw -s "$1";
-      # TODO deal with focus
-    fi
-  }
-  runf ignore_wid "$@";
-}
-
-notice()
-{ # unset a window's override_redirect property
-  notice_wid() {
-    if wattr "$1" && wattr o "$1"; then
-      ignw -r "$1";
-      focus "$1";
-    fi
-  }
-  runf notice_wid "$@";
-}
-
-raise()
-{ # raise a window to the top of the stack
-  raise_wid() {
-    if wattr "$1"; then
-      chwso -r "$1";
-      focus "$1";
-    fi
-  }
-  runf raise_wid "$@";
-}
-
-lower()
-{ # lower a window to the bottom of the stack
-  lower_wid() {
-    if wattr "$1"; then
-      chwso -l "$1";
-      # TODO deal with focus
-    fi
-  }
-  runf lower_wid "$@";
-}
-
-#####################################################################
+############################################################
 main() 
 {
   [ $# -ge 1 ] || die $E_ARG "Not enough arguments";
@@ -149,8 +40,9 @@ main()
   esac
 }
 
+############################################################
 bespoke()
-{ # ln -s ./wm $PATH/bespoke ; startx bespoke
+{ # Start a loop and hold the session open
   wm stack nuke;
   sxhkd -c $WMD/keys || {
     read pid <$TMP/keyd.pid;
@@ -161,10 +53,12 @@ bespoke()
   wait;
 }
 
+###################################################### BEGIN
 hi;
-. $LIB/util.sh
+. $LIB/wm.sh;
+. $LIB/util.sh;
 export WMVERBOSE=false; WMQUIET='';
-while getopts vqle:i: opt; do
+while getopts vqle: opt; do
   case $opt in
     v) # verbose
       export WMVERBOSE=true;
@@ -184,6 +78,7 @@ while getopts vqle:i: opt; do
   esac
 done; shift $((OPTIND - 1));
 
+############################################################
 case $0 in
   *bespoke) $WMQUIET bespoke ;;
   *) $WMQUIET main $@        ;;

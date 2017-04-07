@@ -14,7 +14,7 @@ inplace()
     shift;
   done
   f=$1;
-  t=$(mktemp ip.XXXXXX);
+  t=$(mktemp $TMP/ip.XXXXXX);
   $cmd $f > $t;
   mv $t $f;
 }
