@@ -1,0 +1,7 @@
+#! /usr/bin/env dash
+
+# end things gracefully
+read K < $TMP/keyd.pid;
+kill $K $B ;
+
+pkill -x wew

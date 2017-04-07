@@ -1,0 +1,4 @@
+#!/usr/bin/env dash
+# XCB_DESTROY_NOTIFY
+
+wm stack rm $1;

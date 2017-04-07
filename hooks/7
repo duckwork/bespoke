@@ -1,0 +1,4 @@
+#!/usr/bin/env dash
+# XCB_ENTER_NOTIFY
+
+wm focus $1;

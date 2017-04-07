@@ -1,0 +1,6 @@
+#! /usr/bin/env dash
+# watch for events and ACT
+
+wew -s | while IFS=: read ev wid; do
+  $HOOKS/$ev $wid;
+done

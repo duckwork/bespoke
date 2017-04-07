@@ -1,0 +1,5 @@
+#! /usr/bin/env dash
+# XCB_MAP_NOTIFY
+
+wm stack add $1;
+wm focus $1;
