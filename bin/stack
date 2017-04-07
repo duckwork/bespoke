@@ -1,0 +1,152 @@
+#! /usr/bin/env dash
+
+# `stack` works with clients in a persistent stack (read:
+# that is independent of stacking order).
+
+. $LIB/util.sh
+. $LIB/file.sh
+
+hi() 
+{ # Setup environment
+  dir="$TMP/stack";
+  mkdir -p $dir;
+
+  focus="$dir/focus";
+  mapped="$dir/mapped";
+  hidden="$dir/hidden";
+  ignored="$dir/ignored";
+  all="$dir/all";
+  stack_update all;
+
+  read fw <$focus
+  pointer=$(sed "/$fw/=;d" $mapped);
+  nm=$(length $mapped);
+  [ -z $pointer ] && pointer=$nm
+}
+
+bye()
+{ # Clean up
+  sed "$pointer p;d" $mapped | tee $focus;
+  [ $# -gt 0 ] && return $1;
+}
+
+stack_nuke()
+{ # Delete all the stack information to begin again
+  logx rm -r $dir;
+  exit $?;
+}
+
+stack_next() 
+{ # Focus the next client in the stack, wrapping around
+  amt=${1:-1};
+  [ $amt -ge $nm ] && amt=1;
+  pointer=$(( pointer + $amt ));
+  if [ $pointer -gt $nm ]; then
+    pointer=$(( pointer - $nm ));
+  fi
+  bye;
+}
+stack_prev() 
+{ # Focus the previous client in the stack, wrapping around
+  amt=${1:-1};
+  [ $amt -ge $nm ] && amt=1;
+  pointer=$(( pointer - $amt ));
+  if [ $pointer -lt 1 ]; then
+    pointer=$(( pointer + $nm ));
+  fi
+  bye;
+}
+
+stack_update()
+{ # Update the stacks to reflect reality
+  FORCE=false;
+  [ "$1" = "-f" ] && { FORCE=true; shift; }
+  if [ ! -f "$dir/$1" ] || $FORCE; then
+    case "$1" in
+      focus)   pfw    > $focus   ;;
+      mapped)  lsw    > $mapped  ;;
+      hidden)  lsw -u > $hidden  ;;
+      ignored) lsw -o > $ignored ;;
+      all)
+        pfw > $focus;
+        lsw > $mapped;
+        lsw -u > $hidden;
+        lsw -o > $ignored;
+        lsw -a > $all;
+        ;;
+    esac
+  fi
+}
+
+stack_add()
+{ # Add client to the stack
+  # stack_add [-x] <wid> [stack]
+  EXCLUSIVE='';
+  [ "$1" = "-x" ] && { EXCLUSIVE='-r' ; shift; }
+  wid="$1"; f="${2:-mapped}"
+  stack_rm $EXCLUSIVE $wid $f;
+  stack_rm $wid all;
+  printf '%s\n' $wid >> $dir/$f;
+  printf '%s\n' $wid >> $all;
+}
+stack_rm()
+{ # Remove client from a stack
+  # stack_rm [-r] <wid> [stack]
+  RECURSIVE=false;
+  while getopts r opt; do
+    case $opt in
+      r) RECURSIVE=true ;;
+      \?) die $E_ARG "stack: rm: Unknown arg: $opt" ;;
+    esac
+  done; shift $((OPTIND - 1))
+  wid="$1"; f="${2:-mapped}";
+  _rm_wid_from() {
+    t=$(mktemp $dir/tmprm.XXXXXX);
+    sed "/$wid/d" $1 > $t;
+    mv $t $1;
+  }
+  if $RECURSIVE; then
+    for s in $dir/*; do
+      _rm_wid_from $s;
+    done
+  else
+    _rm_wid_from $dir/$f;
+  fi
+}
+
+# FOR DEBUGGING PURPOSES
+stack_watch()
+{ # Print the stacks
+  clear; x=0; y=0;
+  tput cup $y $x; 
+  printf '%s\t\t%s\t\t%s\t\t%s\t\t%s' FOCUS MAPPED HIDDEN IGNORED ALL;
+  while true; do
+    for f in focus mapped hidden ignored all; do
+      while read w; do
+        y=$((y+1));
+        tput cup $y $x; printf '%s' $w;
+      done < $dir/$f
+      while [ $y -lt 20 ]; do
+        y=$((y+1))
+        tput cup $y $x; printf '            ';
+      done
+      x=$((x + 16)); y=0;
+    done 
+    x=0; y=0;
+  done
+}
+
+main()
+{
+  cmd="$1"; shift;
+  case "$cmd" in
+    -l)
+      [ -z $1 ] && f='*' || f=$1;
+      cat $dir/$f;
+      ;;
+    *) stack_$cmd $@ ;;
+  esac
+}
+
+hi;
+main $@;
