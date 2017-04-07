@@ -1,0 +1,10 @@
+# Border config
+
+width=2
+
+# Schemes are variables prefixed with sch_ and containing
+# border_width and color separated by whitespace.
+# Right now, there are two 'schemes' - there can be more.
+
+sch_normal="$width 0xfef9ec"
+sch_focus="$width 0x6d727e"
