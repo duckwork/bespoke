@@ -20,7 +20,7 @@ hi()
 main() 
 {
   [ $# -ge 1 ] || die $E_ARG "Not enough arguments";
-  cmd="$1"; shift;
+  local cmd="$1"; shift;
   case "$cmd" in
     focus|raise|lower|map|hide|ignore|notice|raise|lower) 
       # built-in commands

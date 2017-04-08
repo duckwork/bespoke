@@ -1,6 +1,7 @@
 #! /usr/bin/env dash
 # watch for events and ACT
 
+# TODO see if there's a way to do this without a subshell
 wew -s | while IFS=: read ev wid; do
   $HOOKS/$ev $wid;
 done

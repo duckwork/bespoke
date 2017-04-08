@@ -28,7 +28,7 @@ silent() { $@ >/dev/null 2>&1 ; }
 
 reads() {
   # read multiple variables at one time
-  rvars="";
+  local rvars="";
   while [ "$1" != "--" ]; do
     rvars="$rvars $1";
     shift;

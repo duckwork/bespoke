@@ -8,13 +8,13 @@ length()
 
 inplace()
 { # inplace <cmd...> file :: void
-  cmd='';
+  local cmd='';
   while [ $# -gt 1 ]; do
     cmd="${cmd} $1";
     shift;
   done
-  f=$1;
-  t=$(mktemp $TMP/ip.XXXXXX);
+  local f=$1;
+  local t=$(mktemp $TMP/ip.XXXXXX);
   $cmd $f > $t;
   mv $t $f;
 }

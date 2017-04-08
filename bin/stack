@@ -37,7 +37,7 @@ stack_nuke()
 
 stack_next() 
 { # Focus the next client in the stack, wrapping around
-  amt=${1:-1};
+  local amt=${1:-1};
   [ $amt -ge $nm ] && amt=1;
   pointer=$(( pointer + $amt ));
   if [ $pointer -gt $nm ]; then
@@ -47,7 +47,7 @@ stack_next()
 }
 stack_prev() 
 { # Focus the previous client in the stack, wrapping around
-  amt=${1:-1};
+  local amt=${1:-1};
   [ $amt -ge $nm ] && amt=1;
   pointer=$(( pointer - $amt ));
   if [ $pointer -lt 1 ]; then
@@ -58,7 +58,7 @@ stack_prev()
 
 stack_update()
 {
-  FORCE=false;
+  local FORCE=false;
   while getopts fa opt; do
     case $opt in
       f) FORCE=true ;;
@@ -83,9 +83,9 @@ stack_update()
 stack_add()
 { # Add client to the stack
   # stack_add [-x] <wid> [stack]
-  EXCLUSIVE='';
+  local EXCLUSIVE='';
   [ "$1" = "-x" ] && { EXCLUSIVE='-r' ; shift; }
-  wid="$1"; f="${2:-mapped}"
+  local wid="$1" f="${2:-mapped}"
   stack_rm $EXCLUSIVE $wid $f;
   stack_rm $wid all;
   printf '%s\n' $wid >> $dir/$f;
@@ -93,16 +93,16 @@ stack_add()
 stack_rm()
 { # Remove client from a stack
   # stack_rm [-r] <wid> [stack]
-  RECURSIVE=false;
+  local RECURSIVE=false;
   while getopts r opt; do
     case $opt in
       r) RECURSIVE=true ;;
       \?) die $E_ARG "stack: rm: Unknown arg: $opt" ;;
     esac
   done; shift $((OPTIND - 1))
-  wid="$1"; f="${2:-mapped}";
+  local wid="$1" f="${2:-mapped}";
   _rm_wid_from() {
-    t=$(mktemp $dir/tmprm.XXXXXX);
+    local t=$(mktemp $dir/tmprm.XXXXXX);
     sed "/$wid/d" $1 > $t;
     mv $t $1;
   }
@@ -118,7 +118,8 @@ stack_rm()
 # FOR DEBUGGING PURPOSES
 stack_debug()
 { # Print the stacks
-  clear; x=0; y=0;
+  clear; 
+  local x=0 y=0;
   tput cup $y $x;
   printf '%s\t\t%s\t\t%s\t\t%s\t\t%s' FOCUS MAPPED HIDDEN IGNORED;
   while true; do
@@ -139,7 +140,7 @@ stack_debug()
 
 main()
 {
-  cmd="$1"; shift;
+  local cmd="$1"; shift;
   case "$cmd" in
     -l)
       [ -z $1 ] && f='*' || f=$1;

@@ -2,6 +2,7 @@
 
 # set config stuff
 
+# TODO edit to work with schemes (see config folder)
 set_borders()
 { # set borders according to config
   . $WMD/config

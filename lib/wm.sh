@@ -3,7 +3,8 @@
 # Utility functions
 runf()
 { # runf <cmd> <args>
-  f="$1"; shift;
+  local f="$1"; shift;
+  local wid;
   case "$1" in
     0x*) wid="$1" ;;
     *)
@@ -21,8 +22,8 @@ runf()
 
 edit()
 { # Edit a file in wm
-  f="$1";
-  t="$(mktemp $TMP/${f##*/}-edit.XXXXXX)";
+  local f="$1";
+  local t="$(mktemp $TMP/${f##*/}-edit.XXXXXX)";
   cp $f $t;
   ${EDITOR:-vi} $t;
   if silent diff -q $t $f; then
