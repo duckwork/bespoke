@@ -24,7 +24,7 @@ main()
   case "$cmd" in
     focus|raise|lower|map|hide|ignore|notice|raise|lower) 
       # built-in commands
-      $cmd $@;
+      $cmd $@; # TODO use logx more
       ;;
     *) # other scripts
       cmd="$BIN/$cmd";
@@ -57,8 +57,8 @@ bespoke()
 
 ###################################################### BEGIN
 hi;
-. $LIB/wm.sh;
 . $LIB/util.sh;
+. $LIB/wm.sh;
 export WMVERBOSE=false; WMQUIET='';
 while getopts vqle: opt; do
   case $opt in
