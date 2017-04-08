@@ -1,3 +1,0 @@
-#! /usr/bin/dash
-
-sxhkd -c $WMD/keys || killall -SIGUSR1 sxhkd &
