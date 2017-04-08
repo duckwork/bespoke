@@ -15,8 +15,7 @@ hi()
   mapped="$dir/mapped";
   hidden="$dir/hidden";
   ignored="$dir/ignored";
-  all="$dir/all";
-  stack_update all;
+  stack_update;
 
   read fw <$focus
   pointer=$(sed "/$fw/=;d" $mapped);
@@ -58,26 +57,29 @@ stack_prev()
 }
 
 stack_update()
-{ # Update the stacks to reflect reality
+{
   FORCE=false;
-  [ "$1" = "-f" ] && { FORCE=true; shift; }
+  while getopts fa opt; do
+    case $opt in
+      f) FORCE=true ;;
+      a)
+        for s in focus mapped hidden ignored; do
+          stack_update $s;
+        done
+        ;;
+      \?) die $E_ARG "Unknown arg: $opt" ;;
+    esac
+  done; shift $((OPTIND - 1));
+  # Update the stack(s)
   if [ ! -f "$dir/$1" ] || $FORCE; then
     case "$1" in
-      focus)   pfw    > $focus   ;;
-      mapped)  lsw    > $mapped  ;;
-      hidden)  lsw -u > $hidden  ;;
+      focus) pfw > $focus ;;
+      mapped) lsw > $mapped ;;
+      hidden) lsw -u > $hidden ;;
       ignored) lsw -o > $ignored ;;
-      all)
-        pfw > $focus;
-        lsw > $mapped;
-        lsw -u > $hidden;
-        lsw -o > $ignored;
-        lsw -a > $all;
-        ;;
     esac
   fi
 }
-
 stack_add()
 { # Add client to the stack
   # stack_add [-x] <wid> [stack]
@@ -87,7 +89,6 @@ stack_add()
   stack_rm $EXCLUSIVE $wid $f;
   stack_rm $wid all;
   printf '%s\n' $wid >> $dir/$f;
-  printf '%s\n' $wid >> $all;
 }
 stack_rm()
 { # Remove client from a stack
@@ -115,13 +116,13 @@ stack_rm()
 }
 
 # FOR DEBUGGING PURPOSES
-stack_watch()
+stack_debug()
 { # Print the stacks
   clear; x=0; y=0;
-  tput cup $y $x; 
-  printf '%s\t\t%s\t\t%s\t\t%s\t\t%s' FOCUS MAPPED HIDDEN IGNORED ALL;
+  tput cup $y $x;
+  printf '%s\t\t%s\t\t%s\t\t%s\t\t%s' FOCUS MAPPED HIDDEN IGNORED;
   while true; do
-    for f in focus mapped hidden ignored all; do
+    for f in focus mapped hidden ignored; do
       while read w; do
         y=$((y+1));
         tput cup $y $x; printf '%s' $w;
