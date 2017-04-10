@@ -10,7 +10,8 @@ hi()
   export LIB="$WMD/lib";
   export BIN="$WMD/bin";
   export HOOKS="$WMD/hooks";
-  mkdir -p $WMD $BIN $LIB ;
+  export CONFIG="$WMD/config";
+  mkdir -p $WMD $BIN $LIB $HOOKS $CONFIG;
 
   export TMP="/tmp/wm";
   mkdir -p $TMP;

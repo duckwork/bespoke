@@ -40,8 +40,13 @@ focus()
 { # focus a window
   focus_wid() {
     if wattr "$1"; then
+      prev=$(pfw);
       wtf "$1";
       chwso -r "$1";
+      # TODO break out to "scheme-y" script
+      . $CONFIG/border;
+      chwb -s $width -c $sch_normal $prev;
+      chwb -s $width -c $sch_focus $1;
     fi
   }
   runf focus_wid "$@";
