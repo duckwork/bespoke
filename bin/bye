@@ -3,8 +3,10 @@
 # Delete stack
 wm stack nuke;
 
+# Remove bait fifo
+rm $TMP/bait.fifo;
+
 # End processes
-# PUT THIS LAST
 read K < $TMP/keyd.pid;
+read B < $TMP/evd.pid;
 kill $K $B;
-pkill -x wew;

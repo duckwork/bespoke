@@ -51,8 +51,9 @@ bespoke()
     read pid <$TMP/keyd.pid;
     kill -SIGUSR1 $pid;
   } &
-  echo $! > $TMP/keyd.pid
+  echo $! > $TMP/keyd.pid;
   wm bait &
+  echo $! > $TMP/evd.pid;
   wait;
 }
 

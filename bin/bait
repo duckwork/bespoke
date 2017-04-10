@@ -1,7 +1,11 @@
 #! /usr/bin/env dash
 # watch for events and ACT
 
-# TODO see if there's a way to do this without a subshell
-wew -s | while IFS=: read ev wid; do
+fifo=$TMP/bait.fifo;
+[ -p $fifo ] && rm $fifo;
+mkfifo $fifo;
+wew -s > $fifo &
+
+while IFS=: read ev wid; do
   $HOOKS/$ev $wid;
-done
+done < $fifo;
