@@ -1,5 +1,11 @@
 #!/usr/bin/env dash
 # XCB_DESTROY_NOTIFY
 
-wm stack rm $1;
-# wm focus stack prev;
+if wm stack member $1 ignored || wattr o $1; then
+  wm stack rm $1 ignored;
+elif wm stack member $1 hidden || ! wattr m $1; then
+  wm stack rm $1 hidden;
+else
+  wm stack rm $1 mapped;
+  wm focus stack prev;
+fi

@@ -1,7 +1,13 @@
 #! /usr/bin/env dash
 # XCB_CREATE_NOTIFY
 
-if ! wattr o $1; then
-  wm stack add $1;
+if wattr o $1; then
+  # Window is ignored
+  wm stack add $1 ignored;
+elif ! wattr m $1; then
+  # Window is not mapped
+  wm stack add $1 hidden;
+else
+  wm stack add $1 mapped;
   wm focus $1;
 fi

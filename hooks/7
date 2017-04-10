@@ -1,6 +1,7 @@
 #!/usr/bin/env dash
 # XCB_ENTER_NOTIFY
 
-if ! wattr o $1; then
+if ! wattr o $1 && ! wm stack member $1 ignored; then
   wm focus $1;
+  wm stack focus $1;
 fi

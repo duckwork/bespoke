@@ -1,7 +1,9 @@
 #! /usr/bin/env dash
 # XCB_MAP_NOTIFY
 
-if ! wattr o $1; then
-  wm stack add $1;
+wm stack add $1 mapped;
+wm stack rm $1 hidden;
+
+if ! wattr o $1 && ! wm stack member $1 ignored; then
   wm focus $1;
 fi

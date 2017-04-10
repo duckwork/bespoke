@@ -3,19 +3,13 @@
 # `stack` works with clients in a persistent stack (read:
 # that is independent of stacking order).
 
-. $LIB/util.sh
-. $LIB/file.sh
+. $LIB/util.sh;
+. $LIB/file.sh;
 
 hi() 
 { # Setup environment
-  dir="$TMP/stack";
-  mkdir -p $dir;
-
-  focus="$dir/focus";
-  mapped="$dir/mapped";
-  hidden="$dir/hidden";
-  ignored="$dir/ignored";
-  stack_update;
+  . $LIB/stack.sh;
+  stack_update -a;
 
   read fw <$focus
   pointer=$(sed "/$fw/=;d" $mapped);
@@ -87,16 +81,17 @@ stack_add()
   [ "$1" = "-x" ] && { EXCLUSIVE='-r' ; shift; }
   local wid="$1" f="${2:-mapped}"
   stack_rm $EXCLUSIVE $wid $f;
-  stack_rm $wid all;
   printf '%s\n' $wid >> $dir/$f;
 }
 stack_rm()
 { # Remove client from a stack
   # stack_rm [-r] <wid> [stack]
-  local RECURSIVE=false;
-  while getopts r opt; do
+  local RECURSIVE=false ECHOWIN=false ECHOSTACK=false;
+  while getopts rws opt; do
     case $opt in
       r) RECURSIVE=true ;;
+      w) ECHOWIN=true   ;;
+      s) ECHOSTACK=true ;;
       \?) die $E_ARG "stack: rm: Unknown arg: $opt" ;;
     esac
   done; shift $((OPTIND - 1))
@@ -113,6 +108,18 @@ stack_rm()
   else
     _rm_wid_from $dir/$f;
   fi
+  $ECHOWIN && echo stack_rm : $wid ;
+  $ECHOSTACK && echo stack_rm : $f ;
+}
+stack_focus()
+{ # Special case for focus
+  printf '%s\n' $1 > $dir/focus;
+}
+
+stack_member ()
+{ # Test whether win is member of stack
+  local w=$1 s=$2;
+  grep -q $w $dir/$s;
 }
 
 # FOR DEBUGGING PURPOSES
