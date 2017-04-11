@@ -66,6 +66,7 @@ while getopts vqle: opt; do
   case $opt in
     v) # verbose
       export WMVERBOSE=true;
+      set -x;
       ;;
     q) # quiet
       WMQUIET=silent;
