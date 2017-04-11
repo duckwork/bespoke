@@ -1,0 +1,3 @@
+#! /usr/bin/env dash
+
+wm stack nuke

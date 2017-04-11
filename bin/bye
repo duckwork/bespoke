@@ -4,9 +4,9 @@
 wm stack nuke;
 
 # Remove bait fifo
-rm $TMP/bait.fifo;
+rm $(wm bait -f);
 
 # End processes
-read K < $TMP/keyd.pid;
-read B < $TMP/evd.pid;
+read K < $KEYPID;
+read B < $EVPID;
 kill $K $B;

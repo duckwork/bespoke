@@ -2,10 +2,18 @@
 # watch for events and ACT
 
 fifo=$TMP/bait.fifo;
+
+# wm bait -f => get fifo and quit
+[ "$1" = "-f" ] && {
+  printf '%s\n' $fifo;
+  exit $SUCCESS;
+}
+
 [ -p $fifo ] && rm $fifo;
 mkfifo $fifo;
 wew -s > $fifo &
+printf '%s\n' $!
 
 while IFS=: read ev wid; do
-  $HOOKS/$ev $wid;
+  $HKS/$ev $wid;
 done < $fifo;

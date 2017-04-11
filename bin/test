@@ -1,0 +1,4 @@
+#! /usr/bin/env dash
+# test wm with Xephyr
+
+

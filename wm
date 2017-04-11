@@ -1,41 +1,68 @@
 #! /usr/bin/env dash
-# WM 0.1
-# by Case Duckworth
+# BESPOKE - a wm that's ~ just for me ~
+# v. 1 + i by Case Duckworth <acduckworth@zoho.com>
 
 ############################################################
-hi()
-{ # Set up directories, variables
-  export WMD="$HOME/projects/wm"; # TODO on install change to
-  # export WMD="${XDG_CONFIG_HOME:-$HOME/.config}/wm"
+hi () # Set up variables, source stuff, make directories
+{
+  # export WMD="${1:-${XDG_CONFIG_HOME:-$HOME/.config}/wm}";
+  export WMD="$HOME/projects/wm";
   export LIB="$WMD/lib";
   export BIN="$WMD/bin";
-  export HOOKS="$WMD/hooks";
-  export CONFIG="$WMD/config";
-  mkdir -p $WMD $BIN $LIB $HOOKS $CONFIG;
-
-  export TMP="/tmp/wm";
-  mkdir -p $TMP;
+  export HKS="$WMD/hooks";
+  export CFG="$WMD/config";
+  export TMP="/tmp/wm"; # TODO allow somehow for multiple sessions?
+  export PID="$TMP/pid";
+  mkdir -p $WMD $BIN $LIB $HKS $CFG $TMP $PID;
+  # Import libraries
+  . $LIB/util.sh;
+  . $LIB/wm.sh;
 }
 
 ############################################################
-main() 
-{
-  [ $# -ge 1 ] || die $E_ARG "Not enough arguments";
+wm ()  # Main entry for wm commands
+{ # wm [-vql] [-e cmd] | <cmd> <args...>
+  # Handle -options
+  export WMVERBOSE=false WMQUIET='';
+  while getopts vqlLe: o ; do
+    case $o in
+      v) # verbose
+        export WMVERBOSE=true;
+        set -o xtrace;
+        ;;
+      q) # quiet
+        export WMQUIET=silent;
+        ;;
+      l) # list commands
+        ls $BIN; exit $?;
+        ;;
+      L) # list everything with tree
+        tree $WMD; exit $?;
+        ;;
+      e) # edit command
+        wm_edit "$BIN/$OPTARG"; # TODO allow editing of anything
+        exit $?;
+        ;;
+      \?) die $E_ARG "${0}: wm: Unknown option: \"$o\"" ;;
+    esac
+  done; shift $((OPTIND - 1));
+  # Run command
+  [ $# -ge 1 ] || die $E_ARG "${0}: wm: Not enough arguments";
   local cmd="$1"; shift;
   case "$cmd" in
-    focus|raise|lower|map|hide|ignore|notice|raise|lower) 
-      # built-in commands
-      $cmd $@; # TODO use logx more
+    focus|raise|lower|map|hide|ignore|notice|raise|lower)
+      # Built-in commands defined in $LIB/wm.sh
+      wm_$cmd $@;
       ;;
-    *) # other scripts
+    *) # Other scripts in $BIN
       cmd="$BIN/$cmd";
       if [ -x "$cmd" ]; then
         $cmd $@;
-      elif [ -f "$cmd" ]; then # TODO take this out when finished
-        chmod +x "$cmd"
+      elif [ -f "$cmd" ]; then # TODO think about commenting out
+        chmod +x "$cmd";
         $cmd $@;
       else
-        die $E_EXE "\"$cmd\" is unavailable";
+        die $E_EXE "${0}: wm: \"$cmd\" is unavailable or unexecutable";
       fi
       ;;
   esac
@@ -45,46 +72,21 @@ main()
 bespoke()
 { # Start a loop and hold the session open
   # ln -s $0 $PATH/bespoke
-  export PATH="$WMD:$PATH";
-  wm stack nuke;
-  sxhkd -c $WMD/keys || {
-    read pid <$TMP/keyd.pid;
+  export PATH="$WMD:$PATH" KEYPID=$PID/keys EVPID=$PID/events;
+  wm init;
+  sxhkd -c $WMD/keys && {
+    printf '%s\n' $! > $KEYPID;
+  } || {
+    read pid < $KEYPID;
     kill -SIGUSR1 $pid;
   } &
-  echo $! > $TMP/keyd.pid;
-  wm bait &
-  echo $! > $TMP/evd.pid;
+  printf '%s\n' $(wm bait) > $EVPID &
   wait;
 }
 
 ###################################################### BEGIN
 hi;
-. $LIB/util.sh;
-. $LIB/wm.sh;
-export WMVERBOSE=false; WMQUIET='';
-while getopts vqle: opt; do
-  case $opt in
-    v) # verbose
-      export WMVERBOSE=true;
-      set -x;
-      ;;
-    q) # quiet
-      WMQUIET=silent;
-      ;;
-    l) # list commands
-      ls $BIN;
-      exit $?;
-      ;;
-    e) # edit command
-      edit "$BIN/$OPTARG";
-      exit $?;
-      ;;
-    \?) die $E_ARG "Unknown option \"$opt\"" ;;
-  esac
-done; shift $((OPTIND - 1));
-
-############################################################
 case $0 in
-  *bespoke) $WMQUIET bespoke ;;
-  *) $WMQUIET main $@        ;;
+  *bespoke) bespoke ;;
+  *) $WMQUIET wm $@ ;;
 esac

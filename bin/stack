@@ -25,7 +25,7 @@ bye()
 
 stack_nuke()
 { # Delete all the stack information to begin again
-  logx rm -r $dir;
+  rm -r $dir;
   exit $?;
 }
 
